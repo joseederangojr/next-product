@@ -1,8 +1,44 @@
+import { useState } from 'react'
 import Head from 'next/head'
-import Image from 'next/image'
 import styles from '../styles/Home.module.css'
+import { useProduct } from '../redux/hooks/use-product'
 
 export default function Home() {
+  //state
+  const { products, createProduct, deleteProduct, updateProduct } = useProduct()
+  const [product, setProduct] = useState({ id: null, name: '', description: '' })
+
+  //actions
+  const handleProductInputChange = event => {
+    setProduct(product => ({
+      ...product,
+      [event.target.name]: event.target.value
+    }))
+  }
+
+  const handleProductSubmit = (event) => {
+    event.preventDefault();
+    if(!product.name || !product.description) {
+      window.alert('Product details required')
+      return
+    }
+
+    if(!product.id) {
+      createProduct({ name: product.name, description: product.description })
+    } else {
+      updateProduct(product)
+    }
+
+    setProduct({id: null, name: '', description: ''})
+  }
+  const handleProductSelect = (id) => {
+    const selectedProduct = products.find(product => product.id === id)
+    setProduct(selectedProduct)
+  }
+  const handleProductRemove = (id) => event => {
+    event.stopPropagation()
+    deleteProduct({ id })
+  }
   return (
     <div className={styles.container}>
       <Head>
@@ -13,56 +49,46 @@ export default function Home() {
 
       <main className={styles.main}>
         <h1 className={styles.title}>
-          Welcome to <a href="https://nextjs.org">Next.js!</a>
+          Welcome to <span>Products</span>!
         </h1>
 
         <p className={styles.description}>
-          Get started by editing{' '}
-          <code className={styles.code}>pages/index.js</code>
+          {products.length ? 'Choose from products list below' : 'Add products now!'}
         </p>
 
+        <form className={styles.grid} onSubmit={handleProductSubmit}>
+            <div className={styles.input}>
+              <label htmlFor='name'>Product Name</label>
+              <input type="text" placeholder="Product Name" id="name" name="name" value={product.name} onInput={handleProductInputChange}  />
+            </div>
+            <div className={styles.input}>
+              <label htmlFor='description'>Product Description</label>
+              <input type="text" placeholder="Product Name" id="description" name="description" value={product.description} onInput={handleProductInputChange} />
+            </div>
+            <button type="submit">Submit</button>
+        </form>
         <div className={styles.grid}>
-          <a href="https://nextjs.org/docs" className={styles.card}>
-            <h2>Documentation &rarr;</h2>
-            <p>Find in-depth information about Next.js features and API.</p>
-          </a>
-
-          <a href="https://nextjs.org/learn" className={styles.card}>
-            <h2>Learn &rarr;</h2>
-            <p>Learn about Next.js in an interactive course with quizzes!</p>
-          </a>
-
-          <a
-            href="https://github.com/vercel/next.js/tree/canary/examples"
-            className={styles.card}
-          >
-            <h2>Examples &rarr;</h2>
-            <p>Discover and deploy boilerplate example Next.js projects.</p>
-          </a>
-
-          <a
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-            className={styles.card}
-          >
-            <h2>Deploy &rarr;</h2>
-            <p>
-              Instantly deploy your Next.js site to a public URL with Vercel.
-            </p>
-          </a>
+          {
+            products.map((product) => (
+              <div className={styles.card} key={product.id} onClick={() => handleProductSelect(product.id)}>
+                <h2>{product.name}</h2>
+                <p>{product.description}</p>
+                <span onClick={handleProductRemove(product.id)} className={styles.cross}>&times;</span>
+              </div>
+            ))
+          }
         </div>
       </main>
 
       <footer className={styles.footer}>
         <a
-          href="https://vercel.com?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
+          href="https://www.linkedin.com/in/joseederangojr/"
           target="_blank"
           rel="noopener noreferrer"
         >
-          Powered by{' '}
+          Built with love by{' '}
           <span className={styles.logo}>
-            <Image src="/vercel.svg" alt="Vercel Logo" width={72} height={16} />
+            Jose Ederango Jr.
           </span>
         </a>
       </footer>
